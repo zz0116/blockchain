@@ -1,5 +1,7 @@
 package com.zyz.learn.blockchain.utils;
 
+import org.jetbrains.annotations.Contract;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -25,14 +27,35 @@ public final class ByteUtils {
         return b;
     }
 
-    public static byte[] merge(byte[] preBlockHashBytes, byte[] dataBytes, byte[] timeStampBytes) {
-        assert preBlockHashBytes != null;
-        assert timeStampBytes != null;
+//    public static byte[] merge(byte[] preBlockHashBytes, byte[] dataBytes, byte[] timeStampBytes) {
+//        assert preBlockHashBytes != null;
+//        assert timeStampBytes != null;
+//
+//        byte[] result = new byte[preBlockHashBytes.length + dataBytes.length + timeStampBytes.length];
+//        System.arraycopy(preBlockHashBytes, 0, result, 0, preBlockHashBytes.length);
+//        System.arraycopy(dataBytes, 0, result, preBlockHashBytes.length, dataBytes.length);
+//        System.arraycopy(timeStampBytes, 0, result, dataBytes.length, timeStampBytes.length);
+//
+//        return result;
+//    }
 
-        byte[] result = new byte[preBlockHashBytes.length + dataBytes.length + timeStampBytes.length];
-        System.arraycopy(preBlockHashBytes, 0, result, 0, preBlockHashBytes.length);
-        System.arraycopy(dataBytes, 0, result, preBlockHashBytes.length, dataBytes.length);
-        System.arraycopy(timeStampBytes, 0, result, dataBytes.length, timeStampBytes.length);
+    @Contract("null, _ -> fail")
+    public static byte[] merge(byte[] firstArray, byte[]... additionalArrays) {
+        assert firstArray != null;
+        assert additionalArrays != null;
+
+        int capacity = firstArray.length;
+        for (byte[] additionalArray : additionalArrays) {
+            capacity += additionalArray.length;
+        }
+
+        byte[] result = new byte[capacity];
+        System.arraycopy(firstArray, 0, result, 0, firstArray.length);
+        int cursor = firstArray.length;
+        for (byte[] additionalArray : additionalArrays) {
+            System.arraycopy(additionalArray, 0, result, cursor, additionalArray.length);
+            cursor += additionalArray.length;
+        }
 
         return result;
     }

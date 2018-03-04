@@ -77,7 +77,8 @@ public class Block {
         byte[] headers = ByteUtils.merge(
                 preBlockHashBytes,
                 this.getData().getBytes(),
-                ByteUtils.toBytes(this.getTimeStamp()));
+                ByteUtils.toBytes(this.getTimeStamp())
+        );
 
         this.setHash(DigestUtils.sha256Hex(headers));
     }
