@@ -100,7 +100,8 @@ public class ProofOfWork {
             shaHex = DigestUtils.sha256Hex(data);
             // 转化为BigInteger类型与target比较
             if (new BigInteger(shaHex, 16).compareTo(this.target) == -1) {
-                System.out.printf("Elapsed Time: %s seconds \n", (float) (System.currentTimeMillis()));
+                System.out.printf("Elapsed Time: %s seconds \n",
+                        (float) (System.currentTimeMillis() - startTime) / 1000);
                 System.out.printf("correct hash Hex: %s \n\n", shaHex);
                 break;
             } else {
@@ -116,7 +117,7 @@ public class ProofOfWork {
      * @return
      */
     public boolean validate() {
-        byte[] data = this.prepareData(this.getBlock().getNonce()); // nonce是不是block的一个属性？
+        byte[] data = this.prepareData(this.getBlock().getNonce());
         return new BigInteger(DigestUtils.sha256Hex(data), 16).compareTo(this.target) == -1;
     }
 }

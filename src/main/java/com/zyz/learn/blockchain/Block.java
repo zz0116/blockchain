@@ -1,10 +1,5 @@
 package com.zyz.learn.blockchain;
 
-import com.zyz.learn.blockchain.utils.ByteUtils;
-import com.zyz.learn.blockchain.utils.DigestUtils;
-import com.zyz.learn.blockchain.utils.StringUtils;
-
-import java.math.BigInteger;
 import java.time.Instant;
 
 /**
@@ -17,6 +12,7 @@ public class Block {
     private String previousHash;// 前一个区块的hash值
     private String data;// 区块数据
     private long timeStamp;
+    private long nonce;
 
     public String getHash() {
         return hash;
@@ -34,18 +30,24 @@ public class Block {
         return timeStamp;
     }
 
+    public long getNonce() {
+        return nonce;
+    }
+
     public void setHash(String hash) {
         this.hash = hash;
     }
 
-    public Block() {
+    public void setNonce(long nonce) {
+        this.nonce = nonce;
     }
 
-    public Block(String hash, String previousHash, String data, long timeStamp) {
+    public Block(String hash, String previousHash, String data, long timeStamp, long nonce) {
         this.hash = hash;
         this.previousHash = previousHash;
         this.data = data;
         this.timeStamp = timeStamp;
+        this.nonce = nonce;
     }
 
     /**
@@ -56,31 +58,12 @@ public class Block {
      * @return
      */
     public static Block newBlock(String previousHash, String data) {
-        Block block = new Block("", previousHash, data, Instant.now().getEpochSecond());
-        block.setHash();
+        Block block = new Block("", previousHash, data, Instant.now().getEpochSecond(), 0);
+        ProofOfWork pow = ProofOfWork.newProofOfWork(block); // 创建Pow算法对象
+        PowResult powResult = pow.run(); // 执行Pow算法
+        block.setHash(powResult.getHash());
+        block.setNonce(powResult.getNonce());
         return block;
-    }
-
-    /**
-     * 计算区块Hash
-     * <p>
-     *     注意：在准备区块数据时，一定要从原始数据类型转化为byte[]，
-     *     不能直接从字符串进行转换
-     * </p>
-     */
-    private void setHash() {
-        byte[] preBlockHashBytes = {};
-        if (StringUtils.isNoneBlank(this.getPreviousHash())) {
-            preBlockHashBytes = new BigInteger(this.getPreviousHash(), 16).toByteArray();
-        }
-
-        byte[] headers = ByteUtils.merge(
-                preBlockHashBytes,
-                this.getData().getBytes(),
-                ByteUtils.toBytes(this.getTimeStamp())
-        );
-
-        this.setHash(DigestUtils.sha256Hex(headers));
     }
 
     /**
@@ -90,9 +73,5 @@ public class Block {
      */
     public static Block newGenesisBlock() {
         return Block.newBlock("", "Genesis Block");
-    }
-
-    public long getNonce() {
-        return 0;
     }
 }

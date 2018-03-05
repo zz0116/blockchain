@@ -1,7 +1,5 @@
 package com.zyz.learn.blockchain;
 
-import static org.junit.Assert.*;
-
 /**
  * @author ZhangYuanzhuo
  * @since 2018/3/2
@@ -17,7 +15,10 @@ public class BlockchainTest {
             System.out.println("Prev.hash: " + block.getPreviousHash());
             System.out.println("Data: " + block.getData());
             System.out.println("Hash: " + block.getHash());
-            System.out.println();
+            System.out.println("Nonce: " + block.getNonce());
+
+            ProofOfWork pow = ProofOfWork.newProofOfWork(block);
+            System.out.println("Pow valid: " + pow.validate() + "\n");
         }
     }
 }
