@@ -91,4 +91,8 @@ public class Block {
     public static Block newGenesisBlock() {
         return Block.newBlock("", "Genesis Block");
     }
+
+    public long getNonce() {
+        return 0;
+    }
 }

@@ -1,11 +1,11 @@
 package com.zyz.learn.blockchain;
 
 import com.zyz.learn.blockchain.utils.ByteUtils;
+import com.zyz.learn.blockchain.utils.DigestUtils;
 import com.zyz.learn.blockchain.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * 工作量证明
@@ -67,19 +67,56 @@ public class ProofOfWork {
      * @param nonce 用于工作量证明算法的计数器
      * @return
      */
-    private String prepareData(long nonce) {
+    private byte[] prepareData(long nonce) {
         byte[] prevBlockHashBytes = {};
         if (StringUtils.isNoneBlank(this.getBlock().getPreviousHash())) {
             prevBlockHashBytes = new BigInteger(this.getBlock().getPreviousHash(), 16).toByteArray();
         }
 
-        return Arrays.toString(
-                ByteUtils.merge(
-                        prevBlockHashBytes,
-                        this.getBlock().getData().getBytes(), // 区块中的交易数据
-                        ByteUtils.toBytes(this.getBlock().getTimeStamp()),
-                        ByteUtils.toBytes(TARGET_BITS),
-                        ByteUtils.toBytes(nonce)
-        ));
+        return ByteUtils.merge(
+                prevBlockHashBytes,
+                this.getBlock().getData().getBytes(), // 区块中的交易数据
+                ByteUtils.toBytes(this.getBlock().getTimeStamp()),
+                ByteUtils.toBytes(TARGET_BITS),
+                ByteUtils.toBytes(nonce)
+        );
+    }
+
+    /**
+     * 运行工作量证明，开始挖矿，找到小于难度目标值的Hash
+     *
+     * @return
+     */
+    public PowResult run() {
+        long nonce = 0;
+        String shaHex = "";
+        System.out.printf("Mining the block containing: %s \n", this.getBlock().getData());
+
+        long startTime = System.currentTimeMillis();
+        while (nonce < Long.MAX_VALUE) {
+            // 准备数据
+            byte[] data = this.prepareData(nonce);
+            // 进行sha256计算
+            shaHex = DigestUtils.sha256Hex(data);
+            // 转化为BigInteger类型与target比较
+            if (new BigInteger(shaHex, 16).compareTo(this.target) == -1) {
+                System.out.printf("Elapsed Time: %s seconds \n", (float) (System.currentTimeMillis()));
+                System.out.printf("correct hash Hex: %s \n\n", shaHex);
+                break;
+            } else {
+                nonce++;
+            }
+        }
+        return new PowResult(nonce, shaHex);
+    }
+
+    /**
+     * 验证区块是否有效
+     *
+     * @return
+     */
+    public boolean validate() {
+        byte[] data = this.prepareData(this.getBlock().getNonce()); // nonce是不是block的一个属性？
+        return new BigInteger(DigestUtils.sha256Hex(data), 16).compareTo(this.target) == -1;
     }
 }
